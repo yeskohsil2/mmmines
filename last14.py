@@ -19,7 +19,7 @@ from telegram.error import RetryAfter
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes, InlineQueryHandler
 
 from database import *
-from handlers import button_handler
+from handlers.callback_handlers import button_handler
 from handlers.games import (
     crash_command, cubic_command, handle_dice_game_callbacks,
     mines_command, gold_command, pyramid_command, tower_command,
