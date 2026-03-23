@@ -1,0 +1,9 @@
+python-telegram-bot==21.10
+python-dotenv>=1.0.0
+httpx==0.28.1
+python-dateutil>=2.8.2
+APScheduler>=3.10.0
+uvicorn>=0.23.0
+Flask==3.1.2
+gunicorn
+psycopg2-binary>=2.9.0
