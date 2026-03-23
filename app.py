@@ -134,8 +134,8 @@ for cmd_name, handler in commands:
 
 application.add_handler(InlineQueryHandler(inline_query_handler))
 application.add_handler(MessageHandler(filters.Regex(r'^кости(\s|$)'), dice_command))
-application.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE & ~filters.COMMAND, bank_text_handler))
 application.add_handler(MessageHandler(filters.ALL, message_handler))
+application.add_handler(MessageHandler(filters.TEXT & filters.ChatType.PRIVATE & ~filters.COMMAND, bank_text_handler))
 application.add_handler(CallbackQueryHandler(button_handler))
 
 logger.info("Application created successfully")

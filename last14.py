@@ -56,7 +56,7 @@ logging.basicConfig(
 )
 
 BOT_TOKEN = '8510598502:AAFW6wxiPIEJ_eHL2RDsukOtguuk5utdacI'
-ADMIN_IDS = "6025818386,8555637694,7019856389,6219530066"
+ADMIN_IDS = [6025818386, 8555637694, 7019856389, 6219530066]
 MAIN_ADMIN_ID = 6025818386
 CHANNEL_USERNAME = "@monstrbotnewss"
 CHANNEL2_USERNAME = "@kursmsgmonstr"
@@ -4357,168 +4357,251 @@ async def bank_back_to_menu_callback(update: Update, context: ContextTypes.DEFAU
         ]), parse_mode='Markdown'
     )
 
-# ==================== FINAL MESSAGE HANDLER ====================
 async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not update.effective_user or not update.message or not is_recent(update):
+    if not update.effective_user or not update.message:
         return
+    if not is_recent(update):
+        return
+
     if await check_ban(update, context):
         return
+    
     uid = update.effective_user.id
     MAIN_ADMIN_ID = context.bot_data.get('MAIN_ADMIN_ID')
     ADMIN_IDS = context.bot_data.get('ADMIN_IDS', [])
+    
+    # Технические работы
     if await get_work_conditions() and uid not in ADMIN_IDS and uid != MAIN_ADMIN_ID:
-        await update.message.reply_text("<tg-emoji emoji-id='5420323339723881652'>⚠️</tg-emoji> Активны технические работы!", parse_mode='HTML')
+        await update.message.reply_text(
+            "<tg-emoji emoji-id='5420323339723881652'>⚠️</tg-emoji> Активны технические работы!",
+            parse_mode='HTML'
+        )
         return
+    
+    # Рассылка
     md = context.bot_data.get('mailing_data', {})
     if uid in md and md[uid].get('step') == 'awaiting_text':
         await mailing_handle_text(update, context)
         return
+    
+    # Chat shared (выбор канала для продвижения)
     if update.message.chat_shared:
         await promo_handle_chat_shared(update, context)
         return
+    
     if not update.message.text:
         return
+    
     text = update.message.text.strip().lower()
+    
+    # Команда рассылки (только админ)
     if text == 'рассылка' and uid == MAIN_ADMIN_ID:
         await mailing_command(update, context)
         return
+    
+    # Основные команды
     if text in ['б', 'бал', 'баланс']:
         await balance(update, context)
+        return
     elif text in ['проф', 'profile', '/profile']:
         await profile_command(update, context)
+        return
     elif text in ['реф', '/ref', 'ref']:
         await ref_command(update, context)
+        return
     elif text in ['топ реф', 'топ рефы', 'топ рефов', 'topref']:
         await top_ref_command(update, context)
+        return
     elif text == 'топ':
         await top(update, context)
+        return
     elif text in ['/promotion', 'продвижение', '/work', 'заработать']:
         if text in ['/work', 'заработать']:
             await work_command(update, context, 1)
         else:
             await promotion_command(update, context)
+        return
     elif text == "/topchat" or text == "топ ч":
         await chat_top(update, context)
+        return
     elif text.startswith('мины '):
         await mines_command(update, context)
+        return
     elif text.startswith('фб ') or text.startswith('/fb '):
         context.args = text.split()[1:]
         await football_command(update, context)
+        return
     elif text.startswith('бк ') or text.startswith('/bk '):
         context.args = text.split()[1:]
         await basketball_command(update, context)
+        return
     elif text.startswith('краш ') or text.startswith('/crash ') or text.startswith('к '):
         await crash_command(update, context)
+        return
     elif text.startswith('золото '):
         await gold_command(update, context)
+        return
     elif text.startswith('кнб ') or text.startswith('/knb '):
         context.args = text.split()[1:]
         await knb_command(update, context)
+        return
     elif text.startswith('дартс ') or text.startswith('дс ') or text == 'дартс' or text == 'дс':
         await darts_command(update, context)
+        return
     elif text.startswith('рр ') or text.startswith('Рр ') or text.startswith('rr '):
         await rr_command(update, context)
+        return
     elif text.startswith('куб ') or text.startswith('кубик ') or text == 'куб' or text == 'кубик':
         await cubic_command(update, context)
+        return
     elif text.startswith('рул ') or text.startswith('рулетка ') or text == 'рул' or text == 'рулетка':
         await roulette_command(update, context)
+        return
     elif text == "кости" or text.startswith("кости "):
         await dice_command(update, context)
+        return
     elif text.startswith('бо ') or text.startswith('Бо ') or text.startswith('боулинг ') or text.startswith('Боулинг '):
         await bowling_command(update, context)
+        return
     elif text.startswith('башня ') or text.startswith('/tower '):
-        context.args = text.split()[1:] if len(text.split()) > 1 else []
+        parts = text.split()
+        context.args = parts[1:] if len(parts) > 1 else []
         await tower_command(update, context)
+        return
     elif text.startswith('/sprevent'):
         await sprevent_command(update, context)
+        return
+    elif text == "ивент" or text == "весна":
+        await sprevent_command(update, context)
+        return
     elif text.startswith('/msh '):
         await msh_command(update, context)
+        return
     elif text.startswith('космо ') or text.startswith('космолёт ') or text == 'космо' or text == 'космолёт':
         await spaceship_command(update, context)
+        return
     elif text.startswith('msg ') or text.startswith('мсг ') or text.startswith('мг '):
         context.args = text.split()[1:]
         await msg_transfer_command(update, context)
+        return
     elif text.startswith('монетка ') or text.startswith('мон ') or text == 'монетка' or text == 'мон':
         await coinflip_command(update, context)
-    elif text == "ивент" or text == "весна":
-        await sprevent_command(update, context)
+        return
     elif uid in spring_question_creation:
         await spring_prize_value_handler(update, context)
+        return
     elif text.startswith('!mt ') or text.startswith('мт '):
         await math_contest_command(update, context)
+        return
     elif text in ['кнб', 'knb']:
         await knb_command(update, context)
+        return
     elif text == "банк" or text == "Банк":
         if update.effective_chat.type == "private":
             await bank_private_command(update, context)
         else:
             await bank_command(update, context)
+        return
     elif text == "акции" or text == "Акции":
         await stocks_info_command(update, context)
+        return
     elif 'donat_step' in context.user_data and context.user_data['donat_step'] == 'waiting_amount':
         await donat_handle_text(update, context)
+        return
     elif text in ['/donat', '/donate', '/conversion', 'донат', 'конвертация']:
         await donat_command(update, context)
+        return
     elif text == "мои акции" or text == "Мои акции":
         await myaction_command(update, context)
+        return
     elif text == "магазин" or text == "Магазин" or text == "маг" or text == "Маг":
         await shop_command(update, context)
+        return
     elif text.startswith('buyact '):
         context.args = text.replace('buyact ', '').split()
         await buyact_command(update, context)
+        return
     elif text.startswith('sellact '):
         context.args = text.replace('sellact ', '').split()
         await sellact_command(update, context)
+        return
     elif text in ['/daily', 'бонус']:
         await daily_command(update, context)
+        return
     elif text in ['/cases', 'кейсы', 'кейсы']:
         await cases_command(update, context, 1)
+        return
     elif text.startswith('пирамида '):
         await pyramid_command(update, context)
+        return
     elif text.startswith('п ') or text.startswith('перевод ') or text.startswith('/send '):
-        context.args = text.split()[1:] if len(text.split()) > 1 else []
+        parts = text.split()
+        context.args = parts[1:] if len(parts) > 1 else []
         await transfer_command(update, context)
+        return
     elif text.startswith('/антоп ') or text.startswith('/untop ') or text == '/антоп' or text == '/untop':
         await untop_command(update, context)
+        return
     elif text.startswith('/втоп ') or text.startswith('/returntop '):
         await return_top_command(update, context)
+        return
     elif text.startswith('/coinfall ') or text.startswith('кф '):
         await coinfall_command(update, context)
+        return
     elif text.startswith('гет ') or text == 'гет' or text.startswith('/get '):
         await get_user_info_command(update, context)
+        return
     elif text.startswith('мут ') or text.startswith('глуш '):
         context.args = text.split()[1:] if len(text.split()) > 1 else []
         await mute_command(update, context)
+        return
     elif text == 'мут' or text == 'глуш':
         context.args = []
         await mute_command(update, context)
+        return
     elif text.startswith('кик '):
         context.args = text.split()[1:] if len(text.split()) > 1 else []
         await kick_command(update, context)
+        return
     elif text == 'кик':
         context.args = []
         await kick_command(update, context)
+        return
     elif text.startswith('!give '):
         context.args = text.replace('!give ', '').split()
         await give_command(update, context)
+        return
     elif text.startswith('!take '):
         context.args = text.replace('!take ', '').split()
         await take_command(update, context)
+        return
     elif text.startswith('промо '):
-        context.args = [text[6:].strip()]
-        await promo_activate_command(update, context)
+        promo_code = text[6:].strip()
+        if promo_code:
+            context.args = [promo_code]
+            await promo_activate_command(update, context)
+        else:
+            await update.message.reply_text("Укажите название промокода.")
+        return
     elif text.startswith('!checkhash '):
         context.args = text.replace('!checkhash ', '').split()
         await checkhash_command(update, context)
+        return
     elif text == "ивенты" or text == "Ивенты":
         await events_command(update, context)
+        return
     elif 'event_creation' in context.user_data:
         await event_text_handler(update, context)
+        return
     elif text.startswith('!tcheckhash '):
         context.args = text.replace('!tcheckhash ', '').split()
         await tcheckhash_command(update, context)
+        return
+    # Создание чека
     elif text.startswith('/newcheck ') or text.startswith('+чек '):
-        context.args = text.split()[1:] if len(text.split()) > 2 else []
+        context.args = text.split()[1:] if len(text.split()) > 1 else []
         await newcheck_command(update, context)
+        return
     elif text == '/checklist':
         await checklist_command(update, context)
+        return
