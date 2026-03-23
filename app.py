@@ -65,9 +65,12 @@ init_database_with_retry()
 logger.info("Creating application...")
 application = Application.builder().token(BOT_TOKEN).build()
 
-# Добавляем bot_data
+# Преобразуем ADMIN_IDS в список чисел
+admin_ids_str = os.getenv('ADMIN_IDS', '')
+admin_ids_list = [int(x.strip()) for x in admin_ids_str.split(',') if x.strip()]
+
 application.bot_data.update({
-    'ADMIN_IDS': os.getenv('ADMIN_IDS'),
+    'ADMIN_IDS': admin_ids_list,  # ← теперь это список чисел
     'MAIN_ADMIN_ID': MAIN_ADMIN_ID,
     'CHANNEL_USERNAME': CHANNEL_USERNAME,
     'CHANNEL2_USERNAME': CHANNEL2_USERNAME,
