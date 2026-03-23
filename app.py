@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Final, Optional, Any
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, InlineQueryHandler
 from database import *
-from handlers import button_handler
+from handlers.callback_handlers import button_handler
 from last14 import *
 
 # Константы для улучшения читаемости и типобезопасности
