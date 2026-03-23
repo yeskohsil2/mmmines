@@ -675,3 +675,14 @@ def generate_math_problem():
     correct_index = options.index(correct)
     
     return question, options, correct_index
+
+# ===== UPDATE TASK PROGRESS =====
+async def update_task_progress_for_game(user_id: int, game_type: str, increment: int = 1):
+    """Обновить прогресс заданий для конкретной игры"""
+    from database import get_all_spring_tasks_async, update_user_task_progress_async
+    
+    tasks = await get_all_spring_tasks_async()
+    
+    for task in tasks:
+        if task['game_type'] == game_type or task['game_type'] is None:
+            await update_user_task_progress_async(user_id, task['id'], increment)
