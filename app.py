@@ -3,6 +3,7 @@ import asyncio
 import os
 import logging
 import threading
+import time
 from typing import Final, Optional, Any
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, InlineQueryHandler
 from database import *
@@ -52,7 +53,6 @@ def init_database_with_retry(max_retries: int = 5, delay: int = 5) -> bool:
             logger.error(f"Database init attempt {attempt + 1} failed: {e}")
             if attempt < max_retries - 1:
                 logger.info(f"Retrying in {delay} seconds...")
-                import time
                 time.sleep(delay)
             else:
                 logger.critical("Failed to initialize database after all retries")
@@ -137,6 +137,7 @@ application.add_handler(CallbackQueryHandler(button_handler))
 
 logger.info("Application created successfully")
 
+
 @app.route('/run_jobs', methods=['POST'])
 def run_jobs():
     """Запуск фоновых задач по запросу с телефона"""
@@ -163,16 +164,19 @@ def run_jobs():
         logger.error(f"Error in run_jobs: {e}", exc_info=True)
         return f"Error: {e}", 500
 
+
 @app.route('/', methods=['GET'])
 def health():
     return "Bot running", 200
+
 
 # Функция для запуска Flask в отдельном потоке
 def run_flask():
     port = int(os.getenv('PORT', 8080))
     app.run(host='0.0.0.0', port=port)
 
-# ЗАПУСКАЕМ FLASK В ОТДЕЛЬНОМ ПОТОКЕ, А БОТА В ГЛАВНОМ
+
+# ЗАПУСКАЕМ FLASK В ОТДЕЛЬНОМ ПОТОКЕ, А БОТА В ГЛАВНОМ С СОЗДАНИЕМ EVENT LOOP
 if __name__ == "__main__":
     logger.info("Starting Flask in separate thread...")
     flask_thread = threading.Thread(target=run_flask)
@@ -180,4 +184,14 @@ if __name__ == "__main__":
     flask_thread.start()
     
     logger.info("Starting bot in main thread...")
-    application.run_polling()
+    
+    # Создаём event loop для Python 3.14.3
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    
+    try:
+        loop.run_until_complete(application.run_polling())
+    except KeyboardInterrupt:
+        logger.info("Bot stopped by user")
+    finally:
+        loop.close()
