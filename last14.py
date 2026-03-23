@@ -25,7 +25,7 @@ from handlers.games import (
     mines_command, gold_command, pyramid_command, tower_command,
     rr_command, dice_command, bowling_command, knb_command,
     coinflip_command, darts_command, spaceship_command, roulette_command,
-    football_command, basketball_command,
+    football_command, basketball_command, coinfall_command,
     handle_mines_callbacks, handle_gold_callbacks, handle_pyramid_callbacks,
     handle_tower_callbacks, handle_rr_callbacks, handle_dice_callbacks,
     handle_coinfall_callbacks, handle_knb_callbacks
